@@ -1,0 +1,7 @@
+version: 2
+
+sources:
+  - name: test
+    schema: source_schema
+    tables:
+      - name: animals
