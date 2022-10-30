@@ -130,3 +130,6 @@ dmypy.json
 
 # generated test data paths
 test-runs/
+
+# any generated parquet files -- must manually add any source files
+.parquet

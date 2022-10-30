@@ -7,48 +7,17 @@ dbt docs: https://docs.getdbt.com/docs/contributing/building-a-new-adapter
   {%- set sql_header = config.get('sql_header', none) -%}
   {{ sql_header if sql_header is not none }}
 
-  {% for node in model['depends_on']['nodes'] %}
-    {% set source = graph['sources'].get(node) or graph['nodes'][node] %}
-
-    {% if source %}
-
-      {% set src_rel = relation.create(
-          database=source['database'],
-          schema=source['schema'],
-          identifier=source['identifier']
-      ) %}
-      {% do log(src_rel, info=true) %}
-      create or replace view {{ src_rel.render() }} as
-        select * from {{ src_rel.render_parquet_scan() }};
-    {% endif %}
-  {% endfor %}
-  copy ({{ sql }}) to '{{ relation.render_path() }}' (format 'parquet')
-  ;
+  copy ({{ sql }}) to '{{ relation.render_path() }}' (format 'parquet');
+  {{ relation.register_as_view_cmd() }};
 {%- endmacro %}
-
 
 {% macro parquet__create_view_as(relation, sql) -%}
   -- For a parquet file, View == Table.
   {%- set sql_header = config.get('sql_header', none) -%}
   {{ sql_header if sql_header is not none }}
 
-  {% for node in model['depends_on']['nodes'] %}
-    {% set source = graph['sources'].get(node) or graph['nodes'][node] %}
-
-    {% if source %}
-
-      {% set src_rel = relation.create(
-          database=source['database'],
-          schema=source['schema'],
-          identifier=source['identifier']
-      ) %}
-      {% do log(src_rel, info=true) %}
-      create or replace view {{ src_rel.render() }} as
-        select * from {{ src_rel.render_parquet_scan() }};
-    {% endif %}
-  {% endfor %}
-  copy ({{ sql }}) to '{{ relation.render_path() }}' (format 'parquet')
-  ;
+  copy ({{ sql }}) to '{{ relation.render_path() }}' (format 'parquet');
+  {{ relation.register_as_view_cmd() }};
 {%- endmacro %}
 
 {% macro parquet__snapshot_string_as_time(timestamp) -%}
@@ -59,7 +28,6 @@ dbt docs: https://docs.getdbt.com/docs/contributing/building-a-new-adapter
 {% macro parquet__snapshot_get_time() -%}
   {{ current_timestamp() }}::timestamp
 {%- endmacro %}
-
 
 {% macro parquet__current_timestamp() -%}
 '''Returns current UTC time'''
